@@ -3,7 +3,11 @@ import Groq from "groq-sdk";
 import { findMenuItemById, getMenuItems } from "./menu.js";
 import type { CartAction, ChatRequest, ChatResponse } from "./types.js";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? "" });
+let groq: Groq | null = null;
+function getGroq(): Groq {
+  if (!groq) groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? "" });
+  return groq;
+}
 
 const cartTools: Groq.Chat.ChatCompletionTool[] = [
   {
@@ -96,28 +100,25 @@ function buildSystemPrompt(request: ChatRequest): string {
 
   const name = request.profile.name.trim() || "there";
 
-  return `You are The Gastronome, an elegant and knowledgeable dining concierge for The Intelligent Bistro.
+  return `You are The Gastronome, a dining concierge for The Intelligent Bistro. Speak warmly and elegantly. Address the customer as ${name}.
 
-Speak in a warm, refined tone — like a sommelier who is also a friend.
-Address the customer as ${name}.
-${dietaryNote}
+## TOOL USE RULES (MUST FOLLOW)
+- Customer says "add [item]" or "order [item]" or "get me [item]" → call add_item tool
+- Customer says "remove [item]" or "take out [item]" → call remove_item tool
+- Customer says "make it [N]" or "change quantity to [N]" → call update_quantity tool
+- Customer says "clear cart" or "start over" or "remove everything" → call clear_cart tool
+- Customer asks for recommendation, suggestion, or question → respond in TEXT ONLY, do NOT call any tool
+- After calling a tool → confirm in one short sentence. Never repeat the cart contents — the customer can see their cart on the Cart tab.
+- ${dietaryNote} If customer orders something conflicting with their dietary preferences, ask for confirmation before calling add_item.
 
-AVAILABLE MENU ITEMS (in-stock only, with tags):
+## MENU (in-stock only)
 ${menuSummary}
 
-CURRENT CART:
+## CURRENT CART
 ${cartSummary}
 
-ORDER HISTORY:
-${favoritesNote}
-
-RULES — follow without exception:
-1. NEVER call a tool unless the customer uses explicit action words: "add", "order", "put in", "get me", "remove", "take out", "clear", "update". Recommendations, questions, and "what do you suggest" are NOT cart actions.
-2. If the customer asks for a suggestion, opinion, or recommendation — describe the dish in words only. Do NOT call add_item or any other tool.
-3. Only when the customer explicitly confirms they want to order something, call the appropriate tool.
-4. Only add items that appear in the menu and are in-stock.
-5. After a tool call, confirm briefly in one sentence.
-6. DIETARY CONFLICTS: Before calling add_item for any item whose tags or description may conflict with the customer's dietary preferences, ask for confirmation first. Example: if the customer is Vegetarian and asks to add a meat dish, say "You've set a vegetarian preference — [item] contains meat. Would you still like to add it?" Only add it if they confirm.`;
+## ORDER HISTORY
+${favoritesNote}`;
 }
 
 type GroqMessage = Groq.Chat.ChatCompletionMessageParam;
@@ -138,11 +139,12 @@ export async function createChatResponse(request: ChatRequest): Promise<ChatResp
       { role: "user" as const, content: request.message },
     ];
 
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+    const response = await getGroq().chat.completions.create({
+      model: "llama-3.1-8b-instant",
       messages,
       tools: cartTools,
       tool_choice: "auto",
+      temperature: 0,
       max_tokens: 512,
     });
 
@@ -188,9 +190,10 @@ export async function createChatResponse(request: ChatRequest): Promise<ChatResp
         })),
       ];
 
-      const followUp = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+      const followUp = await getGroq().chat.completions.create({
+        model: "llama-3.1-8b-instant",
         messages: followUpMessages,
+        temperature: 0,
         max_tokens: 256,
       });
 

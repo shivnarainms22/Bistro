@@ -6,3 +6,7 @@ dist/
 .expo/
 *.tsbuildinfo
 .DS_Store
+
+server/server.err
+server/server.log
+.claude/

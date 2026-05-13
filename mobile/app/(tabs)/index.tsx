@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MaterialIcons } from '@expo/vector-icons';
+
 import { Colors } from '@/constants/Colors';
 import { sendChatMessage, type HistoryEntry } from '@/lib/api';
 import { useMenuStore, useStore } from '@/store';
@@ -62,6 +64,12 @@ export default function ConciergeScreen() {
   const [inputFocused, setInputFocused] = useState(false);
   const listRef = useRef<FlatList>(null);
 
+  const clearConversation = useCallback(() => {
+    setMessages([WELCOME]);
+    setHistory([]);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, []);
+
   const items = useStore((s) => s.items);
   const profile = useStore((s) => s.profile);
   const orders = useStore((s) => s.orders);
@@ -78,11 +86,13 @@ export default function ConciergeScreen() {
         if (action.type === 'add_item') {
           const menuItem = findItemById(action.itemId);
           if (!menuItem) continue;
+          const qty = action.quantity ?? 1;
           const existing = items.find((i) => i.itemId === action.itemId);
           if (existing) {
-            updateQuantity(action.itemId, existing.quantity + (action.quantity ?? 1));
+            updateQuantity(action.itemId, existing.quantity + qty);
           } else {
             addItem({ itemId: action.itemId, name: menuItem.name, price: menuItem.price });
+            if (qty > 1) updateQuantity(action.itemId, qty);
           }
         } else if (action.type === 'remove_item') {
           removeItem(action.itemId);
@@ -161,6 +171,12 @@ export default function ConciergeScreen() {
             <Text style={styles.cartBadgeText}>{cartItemCount} in cart</Text>
           </View>
         )}
+        <Pressable
+          onPress={clearConversation}
+          style={({ pressed }) => [styles.clearBtn, pressed && { opacity: 0.5 }]}
+        >
+          <MaterialIcons name="refresh" size={20} color={Colors.onSurfaceVariant} />
+        </Pressable>
       </View>
 
       {/* Messages */}
@@ -268,6 +284,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   cartBadgeText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  clearBtn: { padding: 4 },
 
   messageList: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
 

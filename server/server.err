@@ -1,0 +1,309 @@
+Groq error: BadRequestError: 400 {"error":{"message":"Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.","type":"invalid_request_error","code":"tool_use_failed","failed_generation":"<function=add_item\":{\"itemId\": \"wild-mushroom-risotto\", \"quantity\": 1}</function>\n"}}
+    at Function.generate (D:\Bistro\server\node_modules\groq-sdk\src\core\error.ts:60:14)
+    at Groq.makeStatusError (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:286:28)
+    at Groq.makeRequest (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:506:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createChatResponse (D:\Bistro\server\src\chat.ts:145:22) {
+  status: 400,
+  headers: Headers {
+    date: 'Wed, 13 May 2026 23:33:10 GMT',
+    'content-type': 'application/json',
+    'content-length': '304',
+    connection: 'keep-alive',
+    'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate',
+    server: 'cloudflare',
+    vary: 'Origin',
+    'x-groq-region': 'dls',
+    'x-ratelimit-limit-requests': '1000',
+    'x-ratelimit-limit-tokens': '12000',
+    'x-ratelimit-remaining-requests': '994',
+    'x-ratelimit-remaining-tokens': '9878',
+    'x-ratelimit-reset-requests': '8m38.4s',
+    'x-ratelimit-reset-tokens': '10.61s',
+    'x-request-id': 'req_01krhtzrj3erz86x66y8e3a4j2',
+    'set-cookie': '__cf_bm=X7TzkI1rp2aOwDPHW8m6RJT6L4hOBBwC1JP4g4f1.oQ-1778715189.8065066-1.0.1.1-bgVO_XRggRB1yWKne7fBQkln1GpsRwcD9hNP9KBRSdC2rpD8L5rPlosBO2hY0mgkoPPfC9PZKNVUpsjVQfOdvOSgJMfpZFMv83Vu5jQqo9p31B3JqJpGVdX8k6163_yd; HttpOnly; SameSite=None; Secure; Path=/; Domain=groq.com; Expires=Thu, 14 May 2026 00:03:10 GMT',
+    via: '1.1 google',
+    'strict-transport-security': 'max-age=15552000',
+    'cf-cache-status': 'DYNAMIC',
+    'cf-ray': '9fb57770483b0c77-SJC',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  error: {
+    error: {
+      message: "Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.",
+      type: 'invalid_request_error',
+      code: 'tool_use_failed',
+      failed_generation: '<function=add_item":{"itemId": "wild-mushroom-risotto", "quantity": 1}</function>\n'
+    }
+  }
+}
+Groq error: BadRequestError: 400 {"error":{"message":"Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.","type":"invalid_request_error","code":"tool_use_failed","failed_generation":"<function=add_item({\"itemId\": \"wild-mushroom-risotto\", \"quantity\": 1})</function>\n"}}
+    at Function.generate (D:\Bistro\server\node_modules\groq-sdk\src\core\error.ts:60:14)
+    at Groq.makeStatusError (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:286:28)
+    at Groq.makeRequest (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:506:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createChatResponse (D:\Bistro\server\src\chat.ts:145:22) {
+  status: 400,
+  headers: Headers {
+    date: 'Wed, 13 May 2026 23:33:17 GMT',
+    'content-type': 'application/json',
+    'content-length': '303',
+    connection: 'keep-alive',
+    'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate',
+    server: 'cloudflare',
+    vary: 'Origin',
+    'x-groq-region': 'dls',
+    'x-ratelimit-limit-requests': '1000',
+    'x-ratelimit-limit-tokens': '12000',
+    'x-ratelimit-remaining-requests': '993',
+    'x-ratelimit-remaining-tokens': '9498',
+    'x-ratelimit-reset-requests': '10m4.8s',
+    'x-ratelimit-reset-tokens': '12.51s',
+    'x-request-id': 'req_01krhv0024ev2tb68yrk5x9vzx',
+    via: '1.1 google',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '__cf_bm=1qJhqbKMkSzB1cL2bXUJW3JapkpQllbWIwAKX0RFnQQ-1778715197.4824538-1.0.1.1-D2Bz48IhjL_oLpLVxwX54VtTytsWXNtEIjML1jwWQUZ_CVbdePAF8m4gGHvLQwSCK8kh4I4Ipj03XWgsQLND1ZPhJqcjc2P66Y3NAX2AOsjvWgiKDUOqXhCSesIpdKgb; HttpOnly; SameSite=None; Secure; Path=/; Domain=groq.com; Expires=Thu, 14 May 2026 00:03:17 GMT',
+    'strict-transport-security': 'max-age=15552000',
+    'cf-ray': '9fb577a04ebb36e8-SJC',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  error: {
+    error: {
+      message: "Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.",
+      type: 'invalid_request_error',
+      code: 'tool_use_failed',
+      failed_generation: '<function=add_item({"itemId": "wild-mushroom-risotto", "quantity": 1})</function>\n'
+    }
+  }
+}
+Groq error: RateLimitError: 429 {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99872, Requested 2425. Please try again in 33m4.608s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+    at Function.generate (D:\Bistro\server\node_modules\groq-sdk\src\core\error.ts:84:14)
+    at Groq.makeStatusError (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:286:28)
+    at Groq.makeRequest (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:506:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createChatResponse (D:\Bistro\server\src\chat.ts:145:22) {
+  status: 429,
+  headers: Headers {
+    date: 'Wed, 13 May 2026 23:33:59 GMT',
+    'content-type': 'application/json',
+    'content-length': '385',
+    connection: 'keep-alive',
+    'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate',
+    'retry-after': '1985',
+    server: 'cloudflare',
+    vary: 'Origin',
+    'x-groq-region': 'yka',
+    'x-ratelimit-limit-requests': '1000',
+    'x-ratelimit-limit-tokens': '12000',
+    'x-ratelimit-remaining-requests': '991',
+    'x-ratelimit-remaining-tokens': '12000',
+    'x-ratelimit-reset-requests': '12m57.599s',
+    'x-ratelimit-reset-tokens': '1ms',
+    'x-request-id': 'req_01krhv18jnfnytkkj0e9kra9vb',
+    'x-should-retry': 'false',
+    'set-cookie': '__cf_bm=9q39vIqzM432bZSHUqMfu6rdj8gNFfBuZ96Jkjw4FNY-1778715238.9720197-1.0.1.1-SleAPJZjk6L3eGokNRLHETvZ0RgcIo1ZmvPihkZpyi6e.KG_8AeOpiWT5yyxI7oPeMkUTocop3dW_jPKdOKHh_UO2nBM0VWxAO0y.rqCTUFnmkEJN5DPxzf293VnSbf9; HttpOnly; SameSite=None; Secure; Path=/; Domain=groq.com; Expires=Thu, 14 May 2026 00:03:59 GMT',
+    'strict-transport-security': 'max-age=15552000',
+    'cf-cache-status': 'DYNAMIC',
+    'cf-ray': '9fb578a39d91cee1-SJC',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  error: {
+    error: {
+      message: 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99872, Requested 2425. Please try again in 33m4.608s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing',
+      type: 'tokens',
+      code: 'rate_limit_exceeded'
+    }
+  }
+}
+Groq error: RateLimitError: 429 {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99859, Requested 2052. Please try again in 27m31.103999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+    at Function.generate (D:\Bistro\server\node_modules\groq-sdk\src\core\error.ts:84:14)
+    at Groq.makeStatusError (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:286:28)
+    at Groq.makeRequest (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:506:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createChatResponse (D:\Bistro\server\src\chat.ts:145:22) {
+  status: 429,
+  headers: Headers {
+    date: 'Wed, 13 May 2026 23:34:10 GMT',
+    'content-type': 'application/json',
+    'content-length': '392',
+    connection: 'keep-alive',
+    'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate',
+    'retry-after': '1652',
+    server: 'cloudflare',
+    vary: 'Origin',
+    'x-groq-region': 'dls',
+    'x-ratelimit-limit-requests': '1000',
+    'x-ratelimit-limit-tokens': '12000',
+    'x-ratelimit-remaining-requests': '991',
+    'x-ratelimit-remaining-tokens': '12000',
+    'x-ratelimit-reset-requests': '12m57.599s',
+    'x-ratelimit-reset-tokens': '1ms',
+    'x-request-id': 'req_01krhv1kz5f8qakq14rsm58zye',
+    'x-should-retry': 'false',
+    via: '1.1 google',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '__cf_bm=H_daSEvo9rr9lC.zlRbAENp063PMSrEnsnezKfHI_.s-1778715250.6373234-1.0.1.1-.mX6m8B.UmnPAd1nBx_US_Mq0kUJkd9YwsPdJm9pXNbRuzJ0gqEaFsFn_FKU2lr8se.7eLQGkzBOdyxcRS20idq5Jdc.S5j9PuU6QD.bOxabF_ScC5KI19qiTTokF944; HttpOnly; SameSite=None; Secure; Path=/; Domain=groq.com; Expires=Thu, 14 May 2026 00:04:10 GMT',
+    'strict-transport-security': 'max-age=15552000',
+    'cf-ray': '9fb578ec7b7a8e9b-SJC',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  error: {
+    error: {
+      message: 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99859, Requested 2052. Please try again in 27m31.103999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing',
+      type: 'tokens',
+      code: 'rate_limit_exceeded'
+    }
+  }
+}
+Groq error: RateLimitError: 429 {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99845, Requested 2106. Please try again in 28m5.664s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+    at Function.generate (D:\Bistro\server\node_modules\groq-sdk\src\core\error.ts:84:14)
+    at Groq.makeStatusError (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:286:28)
+    at Groq.makeRequest (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:506:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createChatResponse (D:\Bistro\server\src\chat.ts:145:22) {
+  status: 429,
+  headers: Headers {
+    date: 'Wed, 13 May 2026 23:34:22 GMT',
+    'content-type': 'application/json',
+    'content-length': '385',
+    connection: 'keep-alive',
+    'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate',
+    'retry-after': '1686',
+    server: 'cloudflare',
+    vary: 'Origin',
+    'x-groq-region': 'dls',
+    'x-ratelimit-limit-requests': '1000',
+    'x-ratelimit-limit-tokens': '12000',
+    'x-ratelimit-remaining-requests': '991',
+    'x-ratelimit-remaining-tokens': '12000',
+    'x-ratelimit-reset-requests': '12m57.599s',
+    'x-ratelimit-reset-tokens': '1ms',
+    'x-request-id': 'req_01krhv1zxpfswabfta7t6jdgda',
+    'x-should-retry': 'false',
+    'set-cookie': '__cf_bm=YG.D9LZitEA1sxSAiPVzN9lZthllcVn6aJ38La.CNVM-1778715262.8808908-1.0.1.1-I8wYBq7gyaEsllcYmxQYHemyH3h5tr688WeNY5mILbs_yycZKSjLQGOy4CopN245cqSvFWrMgFJMpcj1YGbJ4GmaMRVwtsSELurLMw8NejQxVZ1HvKKIDHASx_2ml1g3; HttpOnly; SameSite=None; Secure; Path=/; Domain=groq.com; Expires=Thu, 14 May 2026 00:04:22 GMT',
+    via: '1.1 google',
+    'strict-transport-security': 'max-age=15552000',
+    'cf-cache-status': 'DYNAMIC',
+    'cf-ray': '9fb579390d75ed3f-SJC',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  error: {
+    error: {
+      message: 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99845, Requested 2106. Please try again in 28m5.664s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing',
+      type: 'tokens',
+      code: 'rate_limit_exceeded'
+    }
+  }
+}
+Groq error: RateLimitError: 429 {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99826, Requested 2114. Please try again in 27m56.16s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+    at Function.generate (D:\Bistro\server\node_modules\groq-sdk\src\core\error.ts:84:14)
+    at Groq.makeStatusError (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:286:28)
+    at Groq.makeRequest (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:506:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createChatResponse (D:\Bistro\server\src\chat.ts:145:22) {
+  status: 429,
+  headers: Headers {
+    date: 'Wed, 13 May 2026 23:34:38 GMT',
+    'content-type': 'application/json',
+    'content-length': '385',
+    connection: 'keep-alive',
+    'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate',
+    'retry-after': '1677',
+    server: 'cloudflare',
+    vary: 'Origin',
+    'x-groq-region': 'dls',
+    'x-ratelimit-limit-requests': '1000',
+    'x-ratelimit-limit-tokens': '12000',
+    'x-ratelimit-remaining-requests': '991',
+    'x-ratelimit-remaining-tokens': '12000',
+    'x-ratelimit-reset-requests': '12m57.599s',
+    'x-ratelimit-reset-tokens': '1ms',
+    'x-request-id': 'req_01krhv2fbcfj08amy0wmtqj3zb',
+    'x-should-retry': 'false',
+    'set-cookie': '__cf_bm=IeJdZP9s_.MuaILWmafFzaFbYrCQeX9YAMbRfeXTD8Y-1778715278.683018-1.0.1.1-H13ndloLC9yWpCq_jajmJef1DzkPH.hpwt2sQJw8jNgM_uiDcbgdknzk4rapWOIt.InmsR6YF6_t9nj0irxReKOay04a6PK6IDy6wQHbFnNQlj1.wDfw0Dcw.xO9jU8F; HttpOnly; SameSite=None; Secure; Path=/; Domain=groq.com; Expires=Thu, 14 May 2026 00:04:38 GMT',
+    via: '1.1 google',
+    'strict-transport-security': 'max-age=15552000',
+    'cf-cache-status': 'DYNAMIC',
+    'cf-ray': '9fb5799bcc13eb20-SJC',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  error: {
+    error: {
+      message: 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99826, Requested 2114. Please try again in 27m56.16s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing',
+      type: 'tokens',
+      code: 'rate_limit_exceeded'
+    }
+  }
+}
+Groq error: RateLimitError: 429 {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99787, Requested 2168. Please try again in 28m9.12s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+    at Function.generate (D:\Bistro\server\node_modules\groq-sdk\src\core\error.ts:84:14)
+    at Groq.makeStatusError (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:286:28)
+    at Groq.makeRequest (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:506:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createChatResponse (D:\Bistro\server\src\chat.ts:145:22) {
+  status: 429,
+  headers: Headers {
+    date: 'Wed, 13 May 2026 23:35:12 GMT',
+    'content-type': 'application/json',
+    'content-length': '384',
+    connection: 'keep-alive',
+    'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate',
+    'retry-after': '1690',
+    server: 'cloudflare',
+    vary: 'Origin',
+    'x-groq-region': 'dls',
+    'x-ratelimit-limit-requests': '1000',
+    'x-ratelimit-limit-tokens': '12000',
+    'x-ratelimit-remaining-requests': '992',
+    'x-ratelimit-remaining-tokens': '12000',
+    'x-ratelimit-reset-requests': '11m31.2s',
+    'x-ratelimit-reset-tokens': '1ms',
+    'x-request-id': 'req_01krhv3g82eegtttjn1aybp20g',
+    'x-should-retry': 'false',
+    'set-cookie': '__cf_bm=NTMQcTwKRc1AoXlMo4HNCSsc5ny07R7Y93h6ZiG5v78-1778715312.3659992-1.0.1.1-n2RSED18KtUxphslMA3QTtwRRBXjWWjZAwPAQDBXn22vyxLPWnw_Joo50CtSllGggIAZ2.SVkvqrSU.6_Di5QpBqsrX9MXs0hm5obfPVoQt6TxGExsP1Q7ozofEelTpy; HttpOnly; SameSite=None; Secure; Path=/; Domain=groq.com; Expires=Thu, 14 May 2026 00:05:12 GMT',
+    via: '1.1 google',
+    'strict-transport-security': 'max-age=15552000',
+    'cf-cache-status': 'DYNAMIC',
+    'cf-ray': '9fb57a6e4b7b2b10-SJC',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  error: {
+    error: {
+      message: 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kn8zxqrpfng8ezyxe1er0evv` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99787, Requested 2168. Please try again in 28m9.12s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing',
+      type: 'tokens',
+      code: 'rate_limit_exceeded'
+    }
+  }
+}
+Groq error: BadRequestError: 400 {"error":{"message":"The model `llama3-groq-8b-8192-tool-use-preview` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.","type":"invalid_request_error","code":"model_decommissioned"}}
+    at Function.generate (D:\Bistro\server\node_modules\groq-sdk\src\core\error.ts:60:14)
+    at Groq.makeStatusError (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:286:28)
+    at Groq.makeRequest (D:\Bistro\server\node_modules\groq-sdk\src\client.ts:506:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async createChatResponse (D:\Bistro\server\src\chat.ts:145:22) {
+  status: 400,
+  headers: Headers {
+    date: 'Wed, 13 May 2026 23:39:12 GMT',
+    'content-type': 'application/json',
+    'content-length': '297',
+    connection: 'keep-alive',
+    'cache-control': 'private, max-age=0, no-store, no-cache, must-revalidate',
+    server: 'cloudflare',
+    vary: 'Origin',
+    'x-groq-region': 'dls',
+    'x-request-id': 'req_01krhvav6kev4vrdrdxfnqfh4h',
+    'set-cookie': '__cf_bm=MDhcpwgjAG3cuUFouuOjwH.zno5OFXndlwkFtwwTTrk-1778715552.9591165-1.0.1.1-1yYcdRxpoChJpswmprOAHBLJT0ywormjU4Ht7.K_4DMkKt11w_HpzYpxjOGgEVmCuYa7.DynTxmlEaOgehNrmrwfFMRS8FPGugLULY6AJhvG4pzW.K5WvCjO.GEXeOnH; HttpOnly; SameSite=None; Secure; Path=/; Domain=groq.com; Expires=Thu, 14 May 2026 00:09:12 GMT',
+    via: '1.1 google',
+    'strict-transport-security': 'max-age=15552000',
+    'cf-cache-status': 'DYNAMIC',
+    'cf-ray': '9fb5804dfd0257a9-SJC',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  error: {
+    error: {
+      message: 'The model `llama3-groq-8b-8192-tool-use-preview` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.',
+      type: 'invalid_request_error',
+      code: 'model_decommissioned'
+    }
+  }
+}
