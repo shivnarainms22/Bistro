@@ -4,7 +4,11 @@ import { describe, test } from 'node:test';
 import {
   addCartItem,
   applyCartActionToItems,
+  cartLineKey,
   describeCustomizations,
+  normalizeCartItems,
+  updateCartCustomizations,
+  updateCartQuantity,
 } from '../store/cartLogic.js';
 
 describe('cart logic', () => {
@@ -102,6 +106,91 @@ describe('cart logic', () => {
       doneness: 'medium rare',
       sides: ['fries'],
     });
+  });
+
+  test('updates a single customized item line when AI omits customizations', () => {
+    const items = updateCartQuantity(
+      [
+        {
+          itemId: 'dry-aged-ribeye',
+          name: 'Dry-Aged Ribeye',
+          price: 65,
+          quantity: 1,
+          customizations: { doneness: 'medium rare', sides: ['fries'] },
+        },
+      ],
+      'dry-aged-ribeye',
+      2
+    );
+
+    assert.equal(items[0]?.quantity, 2);
+    assert.deepEqual(items[0]?.customizations, {
+      doneness: 'medium rare',
+      sides: ['fries'],
+    });
+  });
+
+  test('merges cart lines when customization updates produce the same key', () => {
+    const items = updateCartCustomizations(
+      [
+        {
+          itemId: 'dry-aged-ribeye',
+          name: 'Dry-Aged Ribeye',
+          price: 65,
+          quantity: 1,
+          customizations: { doneness: 'well done' },
+        },
+        {
+          itemId: 'dry-aged-ribeye',
+          name: 'Dry-Aged Ribeye',
+          price: 65,
+          quantity: 1,
+        },
+      ],
+      'dry-aged-ribeye',
+      { doneness: 'well done' }
+    );
+
+    const keys = items.map(cartLineKey);
+    assert.equal(new Set(keys).size, keys.length);
+    assert.deepEqual(items, [
+      {
+        itemId: 'dry-aged-ribeye',
+        name: 'Dry-Aged Ribeye',
+        price: 65,
+        quantity: 2,
+        customizations: { doneness: 'well done' },
+      },
+    ]);
+  });
+
+  test('normalizes duplicate persisted cart lines', () => {
+    const items = normalizeCartItems([
+      {
+        itemId: 'dry-aged-ribeye',
+        name: 'Dry-Aged Ribeye',
+        price: 65,
+        quantity: 1,
+        customizations: { doneness: 'well done' },
+      },
+      {
+        itemId: 'dry-aged-ribeye',
+        name: 'Dry-Aged Ribeye',
+        price: 65,
+        quantity: 2,
+        customizations: { doneness: 'well done' },
+      },
+    ]);
+
+    assert.deepEqual(items, [
+      {
+        itemId: 'dry-aged-ribeye',
+        name: 'Dry-Aged Ribeye',
+        price: 65,
+        quantity: 3,
+        customizations: { doneness: 'well done' },
+      },
+    ]);
   });
 
   test('applies AI clear-cart actions by removing every line item', () => {

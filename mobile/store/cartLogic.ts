@@ -63,13 +63,19 @@ export function addCartItem(items: CartItemLike[], item: CartItemLike): CartItem
   return [...items, nextItem];
 }
 
+export function normalizeCartItems<T extends CartItemLike>(items: T[]): T[] {
+  return mergeCartLines(items);
+}
+
 export function updateCartQuantity(
   items: CartItemLike[],
   itemId: string,
   quantity: number,
   customizations?: CartCustomizations
 ): CartItemLike[] {
-  const targetKey = cartLineKey({ itemId, customizations });
+  const targetKey = resolveCartLineKey(items, itemId, customizations);
+  if (!targetKey) return items;
+
   const nextQuantity = Math.trunc(quantity);
 
   if (nextQuantity <= 0) {
@@ -79,6 +85,19 @@ export function updateCartQuantity(
   return items.map((cartItem) =>
     cartLineKey(cartItem) === targetKey ? { ...cartItem, quantity: nextQuantity } : cartItem
   );
+}
+
+function resolveCartLineKey(
+  items: CartItemLike[],
+  itemId: string,
+  customizations?: CartCustomizations
+): string | null {
+  const requestedKey = cartLineKey({ itemId, customizations });
+  if (items.some((cartItem) => cartLineKey(cartItem) === requestedKey)) return requestedKey;
+  if (customizations) return null;
+
+  const matchingLines = items.filter((cartItem) => cartItem.itemId === itemId);
+  return matchingLines.length === 1 ? cartLineKey(matchingLines[0]!) : null;
 }
 
 export function applyCartActionToItems(
@@ -111,13 +130,15 @@ export function updateCartCustomizations(
   itemId: string,
   customizations?: CartCustomizations
 ): CartItemLike[] {
-  return items.map((item) =>
-    item.itemId === itemId
-      ? withOptionalCustomizations({
-          ...item,
-          customizations: { ...(item.customizations ?? {}), ...(customizations ?? {}) },
-        })
-      : item
+  return mergeCartLines(
+    items.map((item) =>
+      item.itemId === itemId
+        ? withOptionalCustomizations({
+            ...item,
+            customizations: { ...(item.customizations ?? {}), ...(customizations ?? {}) },
+          })
+        : item
+    )
   );
 }
 
@@ -143,6 +164,18 @@ function withOptionalCustomizations<T extends CartItemLike>(item: T): T {
     return rest as T;
   }
   return item;
+}
+
+function mergeCartLines<T extends CartItemLike>(items: T[]): T[] {
+  const merged = new Map<string, T>();
+
+  for (const item of items) {
+    const key = cartLineKey(item);
+    const existing = merged.get(key);
+    merged.set(key, existing ? { ...existing, quantity: existing.quantity + item.quantity } : item);
+  }
+
+  return Array.from(merged.values());
 }
 
 function capitalize(value: string): string {

@@ -5,6 +5,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import type { MenuCategory, MenuItem } from '@/lib/api';
 import {
   addCartItem,
+  normalizeCartItems,
   updateCartCustomizations,
   updateCartQuantity,
   type CartCustomizations,
@@ -126,6 +127,7 @@ export const useStore = create<BistroStore>()(
         return {
           ...current,
           ...persistedState,
+          items: normalizeCartItems(persistedState?.items ?? current.items),
           profile: {
             ...current.profile,
             ...persistedState?.profile,
