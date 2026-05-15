@@ -2,10 +2,37 @@
 
 React Native (Expo) mobile app plus a Node.js/Fastify backend for AI-assisted restaurant ordering.
 
+## Highlights
+
+- Polished Expo mobile experience with Concierge chat, menu browsing, cart management, profile preferences, and order history.
+- Conversational ordering through structured cart actions for add, remove, quantity updates, item option updates, and clear-cart requests.
+- Dietary-aware recommendations and confirmations using explicit menu metadata for vegetarian, gluten-free, dairy-free, nut-free, and allergen information.
+- Deterministic local parser for core demo flows, with optional Groq LLM fallback for broader natural-language handling.
+- Regression tests for backend API/cart parsing and mobile cart state behavior.
+
 ## Project Structure
 
 - `mobile/` - Expo app with menu browsing, cart management, profile/order history, and concierge chat.
 - `server/` - Fastify API serving menu data and structured cart actions from natural-language requests.
+
+## Architecture
+
+```text
+mobile/
+  app/(tabs)/          Expo Router screens: Concierge, Menu, Cart, Profile
+  lib/api.ts           API client and shared response types
+  store/               Zustand cart/profile/order state and cart reducers
+  test/                Node test coverage for cart state behavior
+
+server/
+  src/app.ts           Fastify routes for /api/menu, /api/chat, /health
+  src/chat.ts          Chat orchestration, prompt contract, deterministic fallback
+  src/cartActions.ts   Natural-language cart intent parsing and action validation
+  src/menu.ts          Menu catalog with dietary/allergen metadata
+  test/                Vitest API and cart-action regression tests
+```
+
+The backend always returns structured `actions` alongside assistant text. The mobile app applies those actions through the same cart reducer logic used by direct UI actions, keeping AI and UI cart behavior consistent.
 
 ## Setup
 
