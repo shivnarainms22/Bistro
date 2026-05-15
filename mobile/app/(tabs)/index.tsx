@@ -16,8 +16,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { Colors } from '@/constants/Colors';
-import { sendChatMessage, type HistoryEntry } from '@/lib/api';
+import { fetchMenu, sendChatMessage, type HistoryEntry } from '@/lib/api';
 import { useMenuStore, useStore } from '@/store';
+import { describeCustomizations, type CartCustomizations } from '@/store/cartLogic';
 
 interface Message {
   id: string;
@@ -62,6 +63,7 @@ export default function ConciergeScreen() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
+  const [cartNotice, setCartNotice] = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
 
   const clearConversation = useCallback(() => {
@@ -76,34 +78,52 @@ export default function ConciergeScreen() {
   const addItem = useStore((s) => s.addItem);
   const removeItem = useStore((s) => s.removeItem);
   const updateQuantity = useStore((s) => s.updateQuantity);
+  const updateCustomizations = useStore((s) => s.updateCustomizations);
   const clearCart = useStore((s) => s.clearCart);
   const findItemById = useMenuStore((s) => s.findItemById);
+  const categories = useMenuStore((s) => s.categories);
+  const setCategories = useMenuStore((s) => s.setCategories);
   const cartItemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
+  const summarizeActions = useCallback(
+    (actions: { type: string; itemId: string; quantity?: number; customizations?: CartCustomizations }[]) => {
+      const labels = actions.map((action) => {
+        if (action.type === 'clear_cart') return 'Cart cleared';
+        const menuItem = findItemById(action.itemId);
+        const name = menuItem?.name ?? action.itemId;
+        if (action.type === 'remove_item') return `Removed ${name}`;
+        if (action.type === 'update_item') return `Updated ${name} options`;
+        if (action.type === 'update_quantity') return `Updated ${name} to ${action.quantity}`;
+        const customizations = describeCustomizations(action.customizations);
+        return `Added ${action.quantity ?? 1} ${name}${customizations ? ` (${customizations})` : ''}`;
+      });
+      return labels.join(' · ');
+    },
+    [findItemById]
+  );
+
   const applyActions = useCallback(
-    (actions: { type: string; itemId: string; quantity?: number }[]) => {
+    (actions: { type: string; itemId: string; quantity?: number; customizations?: CartCustomizations }[]) => {
       for (const action of actions) {
         if (action.type === 'add_item') {
           const menuItem = findItemById(action.itemId);
           if (!menuItem) continue;
           const qty = action.quantity ?? 1;
-          const existing = items.find((i) => i.itemId === action.itemId);
-          if (existing) {
-            updateQuantity(action.itemId, existing.quantity + qty);
-          } else {
-            addItem({ itemId: action.itemId, name: menuItem.name, price: menuItem.price });
-            if (qty > 1) updateQuantity(action.itemId, qty);
-          }
+          const existing = items.find((i) => i.itemId === action.itemId && !i.customizations);
+          if (existing && !action.customizations) updateQuantity(action.itemId, existing.quantity + qty);
+          else addItem({ itemId: action.itemId, name: menuItem.name, price: menuItem.price, quantity: qty, customizations: action.customizations });
         } else if (action.type === 'remove_item') {
           removeItem(action.itemId);
         } else if (action.type === 'update_quantity' && action.quantity !== undefined) {
-          updateQuantity(action.itemId, action.quantity);
+          updateQuantity(action.itemId, action.quantity, action.customizations);
+        } else if (action.type === 'update_item') {
+          updateCustomizations(action.itemId, action.customizations);
         } else if (action.type === 'clear_cart') {
           clearCart();
         }
       }
     },
-    [items, findItemById, addItem, removeItem, updateQuantity, clearCart]
+    [items, findItemById, addItem, removeItem, updateQuantity, updateCustomizations, clearCart]
   );
 
   const send = useCallback(
@@ -120,8 +140,16 @@ export default function ConciergeScreen() {
 
       try {
         const res = await sendChatMessage(trimmed, items, profile, history, orders);
+        if (res.actions.some((action) => action.type === 'add_item') && categories.length === 0) {
+          try {
+            setCategories(await fetchMenu());
+          } catch {
+            throw new Error('Menu unavailable for cart action');
+          }
+        }
         applyActions(res.actions);
         if (res.actions.length > 0) {
+          setCartNotice(summarizeActions(res.actions));
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
         const reply: Message = {
@@ -141,7 +169,7 @@ export default function ConciergeScreen() {
           {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
-            text: "I'm having trouble reaching the kitchen right now. Please try again.",
+            text: "I'm having trouble reaching the kitchen or loading the menu. Please check the server and try again.",
           },
         ]);
       } finally {
@@ -149,7 +177,7 @@ export default function ConciergeScreen() {
         setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
       }
     },
-    [sending, items, profile, applyActions]
+    [sending, items, profile, history, orders, categories.length, setCategories, applyActions, summarizeActions]
   );
 
   return (
@@ -198,6 +226,16 @@ export default function ConciergeScreen() {
           <View style={[styles.bubble, styles.bubbleAssistant]}>
             <Text style={styles.typingDots}>• • •</Text>
           </View>
+        </View>
+      )}
+
+      {cartNotice && (
+        <View style={styles.notice}>
+          <MaterialIcons name="check-circle" size={16} color={Colors.secondary} />
+          <Text style={styles.noticeText} numberOfLines={2}>{cartNotice}</Text>
+          <Pressable onPress={() => setCartNotice(null)} hitSlop={8}>
+            <MaterialIcons name="close" size={16} color={Colors.onSurfaceVariant} />
+          </Pressable>
         </View>
       )}
 
@@ -307,6 +345,26 @@ const styles = StyleSheet.create({
 
   typingRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 16, marginBottom: 4 },
   typingDots: { fontSize: 18, color: Colors.onSurfaceVariant, letterSpacing: 2 },
+
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#fff4ed',
+    borderWidth: 1,
+    borderColor: '#ffd3bf',
+  },
+  noticeText: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+    color: Colors.onSurface,
+  },
 
   chipsRow: {
     flexDirection: 'row',

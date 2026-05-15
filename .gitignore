@@ -5,6 +5,7 @@ node_modules/
 dist/
 .expo/
 *.tsbuildinfo
+.test-build/
 .DS_Store
 
 server/server.err

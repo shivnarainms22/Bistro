@@ -11,9 +11,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/Colors';
-import { useStore, type OrderRecord } from '@/store';
-
-const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free'];
+import { DIETARY_OPTIONS, useStore, type OrderRecord } from '@/store';
+import { cartLineKey, describeCustomizations } from '@/store/cartLogic';
 
 function Field({
   label,
@@ -56,13 +55,21 @@ function OrderCard({ order }: { order: OrderRecord }) {
         <Text style={styles.statusText}>Delivered</Text>
         <Text style={styles.dateText}>{formatted}</Text>
       </View>
-      {order.items.map((item) => (
-        <View key={item.itemId} style={styles.orderItemRow}>
-          <Text style={styles.orderItemQty}>{item.quantity}×</Text>
-          <Text style={styles.orderItemName}>{item.name}</Text>
-          <Text style={styles.orderItemPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
-        </View>
-      ))}
+      {order.items.map((item) => {
+        const customizations = describeCustomizations(item.customizations);
+        return (
+          <View key={cartLineKey(item)} style={styles.orderItemBlock}>
+            <View style={styles.orderItemRow}>
+              <Text style={styles.orderItemQty}>{item.quantity}×</Text>
+              <Text style={styles.orderItemName}>{item.name}</Text>
+              <Text style={styles.orderItemPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
+            </View>
+            {customizations !== '' && (
+              <Text style={styles.orderItemOptions}>{customizations}</Text>
+            )}
+          </View>
+        );
+      })}
       <View style={styles.orderTotal}>
         <Text style={styles.orderTotalLabel}>Total paid</Text>
         <Text style={styles.orderTotalValue}>${order.total.toFixed(2)}</Text>
@@ -222,9 +229,16 @@ const styles = StyleSheet.create({
   dateText: { fontSize: 12, fontFamily: 'Inter_400Regular', color: Colors.onSurfaceVariant },
 
   orderItemRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  orderItemBlock: { marginBottom: 4 },
   orderItemQty: { fontSize: 13, fontFamily: 'Inter_600SemiBold', color: Colors.secondary, width: 24 },
   orderItemName: { flex: 1, fontSize: 14, fontFamily: 'Inter_400Regular', color: Colors.onSurface },
   orderItemPrice: { fontSize: 13, fontFamily: 'Inter_400Regular', color: Colors.onSurfaceVariant },
+  orderItemOptions: {
+    marginLeft: 32,
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    color: Colors.secondary,
+  },
 
   orderTotal: {
     flexDirection: 'row', justifyContent: 'space-between',

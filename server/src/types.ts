@@ -12,11 +12,22 @@ export interface MenuItem {
   description: string;
   category: MenuCategoryName;
   tags: string[];
+  dietary: DietaryMetadata;
+  allergens: Allergen[];
   imageUrl: string;
   blurhash: string;
   inStock: boolean;
   customizable: boolean;
 }
+
+export interface DietaryMetadata {
+  vegetarian: boolean;
+  glutenFree: boolean;
+  dairyFree: boolean;
+  nutFree: boolean;
+}
+
+export type Allergen = "dairy" | "gluten" | "tree-nuts" | "peanuts" | "shellfish" | "meat";
 
 export interface MenuCategory {
   name: MenuCategoryName;
@@ -28,11 +39,7 @@ export interface CartItem {
   name: string;
   quantity: number;
   price: number;
-  customizations?: {
-    doneness?: string;
-    sides?: string[];
-    specialInstructions?: string;
-  };
+  customizations?: CartCustomizations;
 }
 
 export interface UserProfile {
@@ -41,12 +48,22 @@ export interface UserProfile {
   deliveryAddress: string;
 }
 
-export type CartActionType = "add_item" | "remove_item" | "update_quantity" | "clear_cart";
+export type CartActionType = "add_item" | "remove_item" | "update_quantity" | "update_item" | "clear_cart";
 
 export interface CartAction {
   type: CartActionType;
   itemId: string;
   quantity?: number;
+  customizations?: CartCustomizations;
+}
+
+export interface CartCustomizations {
+  size?: string;
+  spiceLevel?: string;
+  milk?: string;
+  doneness?: string;
+  sides?: string[];
+  specialInstructions?: string;
 }
 
 export interface HistoryEntry {

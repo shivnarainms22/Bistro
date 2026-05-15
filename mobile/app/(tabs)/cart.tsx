@@ -12,29 +12,34 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/Colors';
 import { useStore, type CartItem } from '@/store';
+import { cartLineKey, describeCustomizations } from '@/store/cartLogic';
 
 function CartRow({ item }: { item: CartItem }) {
   const updateQuantity = useStore((s) => s.updateQuantity);
-  const removeItem = useStore((s) => s.removeItem);
 
   const decrement = useCallback(() => {
     if (item.quantity === 1) {
-      removeItem(item.itemId);
+      updateQuantity(item.itemId, 0, item.customizations);
     } else {
-      updateQuantity(item.itemId, item.quantity - 1);
+      updateQuantity(item.itemId, item.quantity - 1, item.customizations);
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [item, updateQuantity, removeItem]);
+  }, [item, updateQuantity]);
 
   const increment = useCallback(() => {
-    updateQuantity(item.itemId, item.quantity + 1);
+    updateQuantity(item.itemId, item.quantity + 1, item.customizations);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [item, updateQuantity]);
+
+  const customizationSummary = describeCustomizations(item.customizations);
 
   return (
     <View style={styles.row}>
       <View style={styles.rowInfo}>
         <Text style={styles.rowName}>{item.name}</Text>
+        {customizationSummary !== '' && (
+          <Text style={styles.rowOptions}>{customizationSummary}</Text>
+        )}
         <Text style={styles.rowPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
       </View>
       <View style={styles.stepper}>
@@ -103,7 +108,7 @@ export default function CartScreen() {
         <>
           <FlatList
             data={items}
-            keyExtractor={(i) => i.itemId}
+            keyExtractor={(i) => cartLineKey(i)}
             renderItem={({ item }) => <CartRow item={item} />}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             contentContainerStyle={styles.list}
@@ -177,6 +182,12 @@ const styles = StyleSheet.create({
   },
   rowInfo: { flex: 1, marginRight: 16 },
   rowName: { fontSize: 16, fontFamily: 'Inter_500Medium', color: Colors.onSurface, marginBottom: 2 },
+  rowOptions: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    color: Colors.secondary,
+    marginBottom: 2,
+  },
   rowPrice: { fontSize: 14, fontFamily: 'Inter_400Regular', color: Colors.onSurfaceVariant },
   separator: { height: 1, backgroundColor: Colors.outlineVariant },
 

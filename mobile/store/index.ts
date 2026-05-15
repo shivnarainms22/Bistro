@@ -3,12 +3,21 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { MenuCategory, MenuItem } from '@/lib/api';
+import {
+  addCartItem,
+  updateCartCustomizations,
+  updateCartQuantity,
+  type CartCustomizations,
+} from './cartLogic';
+
+export const DIETARY_OPTIONS = ['Vegetarian', 'Gluten-Free', 'Dairy-Free', 'Nut-Free'] as const;
 
 export interface CartItem {
   itemId: string;
   name: string;
   quantity: number;
   price: number;
+  customizations?: CartCustomizations;
 }
 
 export interface Profile {
@@ -29,9 +38,10 @@ export interface OrderRecord {
 
 interface CartSlice {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, 'quantity'>) => void;
+  addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
   removeItem: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
+  updateQuantity: (itemId: string, quantity: number, customizations?: CartCustomizations) => void;
+  updateCustomizations: (itemId: string, customizations?: CartCustomizations) => void;
   clearCart: () => void;
   cartTotal: () => number;
 }
@@ -48,30 +58,30 @@ interface OrdersSlice {
 
 type BistroStore = CartSlice & ProfileSlice & OrdersSlice;
 
+function sanitizeDietaryPrefs(prefs: unknown): string[] {
+  if (!Array.isArray(prefs)) return [];
+  return prefs.filter((pref): pref is string =>
+    typeof pref === 'string' && DIETARY_OPTIONS.includes(pref as (typeof DIETARY_OPTIONS)[number])
+  );
+}
+
 export const useStore = create<BistroStore>()(
   persist(
     (set, get) => ({
       items: [],
       addItem: (item) =>
-        set((state) => {
-          const existing = state.items.find((i) => i.itemId === item.itemId);
-          if (existing) {
-            return {
-              items: state.items.map((i) =>
-                i.itemId === item.itemId ? { ...i, quantity: i.quantity + 1 } : i
-              ),
-            };
-          }
-          return { items: [...state.items, { ...item, quantity: 1 }] };
-        }),
+        set((state) => ({
+          items: addCartItem(state.items, { ...item, quantity: item.quantity ?? 1 }),
+        })),
       removeItem: (itemId) =>
         set((state) => ({ items: state.items.filter((i) => i.itemId !== itemId) })),
-      updateQuantity: (itemId, quantity) =>
+      updateQuantity: (itemId, quantity, customizations) =>
         set((state) => ({
-          items:
-            quantity <= 0
-              ? state.items.filter((i) => i.itemId !== itemId)
-              : state.items.map((i) => (i.itemId === itemId ? { ...i, quantity } : i)),
+          items: updateCartQuantity(state.items, itemId, quantity, customizations),
+        })),
+      updateCustomizations: (itemId, customizations) =>
+        set((state) => ({
+          items: updateCartCustomizations(state.items, itemId, customizations),
         })),
       clearCart: () => set({ items: [] }),
       cartTotal: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
@@ -83,7 +93,16 @@ export const useStore = create<BistroStore>()(
         dietaryPrefs: [],
       },
       setProfile: (patch) =>
-        set((state) => ({ profile: { ...state.profile, ...patch } })),
+        set((state) => ({
+          profile: {
+            ...state.profile,
+            ...patch,
+            dietaryPrefs:
+              'dietaryPrefs' in patch
+                ? sanitizeDietaryPrefs(patch.dietaryPrefs)
+                : sanitizeDietaryPrefs(state.profile.dietaryPrefs),
+          },
+        })),
 
       orders: [],
       placeOrder: (items, total) =>
@@ -102,6 +121,18 @@ export const useStore = create<BistroStore>()(
     {
       name: 'bistro-store',
       storage: createJSONStorage(() => AsyncStorage),
+      merge: (persisted, current) => {
+        const persistedState = persisted as Partial<BistroStore> | undefined;
+        return {
+          ...current,
+          ...persistedState,
+          profile: {
+            ...current.profile,
+            ...persistedState?.profile,
+            dietaryPrefs: sanitizeDietaryPrefs(persistedState?.profile?.dietaryPrefs),
+          },
+        };
+      },
     }
   )
 );

@@ -11,6 +11,9 @@ const cartItemSchema = z.object({
   price: z.number().nonnegative(),
   customizations: z
     .object({
+      size: z.string().min(1).optional(),
+      spiceLevel: z.string().min(1).optional(),
+      milk: z.string().min(1).optional(),
       doneness: z.string().min(1).optional(),
       sides: z.array(z.string().min(1)).optional(),
       specialInstructions: z.string().min(1).optional(),

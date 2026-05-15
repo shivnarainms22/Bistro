@@ -8,7 +8,83 @@ const categoryOrder: MenuCategoryName[] = [
   "Coffee & Brunch",
 ];
 
-const menuItems: MenuItem[] = [
+const dietaryProfiles: Record<
+  string,
+  Pick<MenuItem, "dietary" | "allergens">
+> = {
+  "dry-aged-ribeye": {
+    dietary: { vegetarian: false, glutenFree: true, dairyFree: false, nutFree: true },
+    allergens: ["meat", "dairy"],
+  },
+  "a5-wagyu-strip": {
+    dietary: { vegetarian: false, glutenFree: true, dairyFree: true, nutFree: true },
+    allergens: ["meat"],
+  },
+  "pan-seared-scallops": {
+    dietary: { vegetarian: false, glutenFree: true, dairyFree: false, nutFree: true },
+    allergens: ["shellfish", "dairy"],
+  },
+  "herb-crusted-lamb": {
+    dietary: { vegetarian: false, glutenFree: true, dairyFree: true, nutFree: false },
+    allergens: ["meat", "tree-nuts"],
+  },
+  "truffled-bone-marrow": {
+    dietary: { vegetarian: false, glutenFree: false, dairyFree: true, nutFree: true },
+    allergens: ["meat", "gluten"],
+  },
+  "heirloom-burrata": {
+    dietary: { vegetarian: true, glutenFree: false, dairyFree: false, nutFree: true },
+    allergens: ["dairy", "gluten"],
+  },
+  "smoked-octopus": {
+    dietary: { vegetarian: false, glutenFree: true, dairyFree: true, nutFree: true },
+    allergens: ["shellfish"],
+  },
+  margherita: {
+    dietary: { vegetarian: true, glutenFree: false, dairyFree: false, nutFree: true },
+    allergens: ["dairy", "gluten"],
+  },
+  "truffle-arborio": {
+    dietary: { vegetarian: true, glutenFree: false, dairyFree: false, nutFree: true },
+    allergens: ["dairy", "gluten"],
+  },
+  "wild-mushroom-risotto": {
+    dietary: { vegetarian: true, glutenFree: true, dairyFree: false, nutFree: true },
+    allergens: ["dairy"],
+  },
+  "barolo-garnet": {
+    dietary: { vegetarian: true, glutenFree: true, dairyFree: true, nutFree: true },
+    allergens: [],
+  },
+  "chateauneuf-du-pape": {
+    dietary: { vegetarian: true, glutenFree: true, dairyFree: true, nutFree: true },
+    allergens: [],
+  },
+  "cremant-dalsace": {
+    dietary: { vegetarian: true, glutenFree: true, dairyFree: true, nutFree: true },
+    allergens: [],
+  },
+  "flat-white": {
+    dietary: { vegetarian: true, glutenFree: true, dairyFree: false, nutFree: true },
+    allergens: ["dairy"],
+  },
+  "oat-flat-white": {
+    dietary: { vegetarian: true, glutenFree: true, dairyFree: true, nutFree: true },
+    allergens: [],
+  },
+  "avocado-toast": {
+    dietary: { vegetarian: true, glutenFree: false, dairyFree: false, nutFree: true },
+    allergens: ["dairy", "gluten"],
+  },
+  "blueberry-pancakes": {
+    dietary: { vegetarian: true, glutenFree: false, dairyFree: false, nutFree: true },
+    allergens: ["dairy", "gluten"],
+  },
+};
+
+type RawMenuItem = Omit<MenuItem, "dietary" | "allergens">;
+
+const menuItems: RawMenuItem[] = [
   {
     id: "dry-aged-ribeye",
     name: "Dry-Aged Ribeye",
@@ -183,7 +259,7 @@ const menuItems: MenuItem[] = [
     price: 6,
     description: "House favorite flat white finished with silky oat milk.",
     category: "Coffee & Brunch",
-    tags: ["Coffee", "Brunch", "Vegan-Friendly"],
+    tags: ["Coffee", "Brunch", "Dairy-Free"],
     imageUrl: "https://images.unsplash.com/photo-1534040385115-33dcb3acba5b?auto=format&fit=crop&w=1200&q=80",
     blurhash: "L6L4t+~q00?b-;M{RjRj00M{WBof",
     inStock: true,
@@ -216,16 +292,24 @@ const menuItems: MenuItem[] = [
 ];
 
 export function getMenuItems(): MenuItem[] {
-  return menuItems;
+  return menuItems.map((item) => {
+    const metadata = dietaryProfiles[item.id];
+    if (!metadata) {
+      throw new Error(`Missing dietary metadata for menu item ${item.id}`);
+    }
+    return { ...item, ...metadata };
+  });
 }
 
 export function getMenuCategories(): MenuCategory[] {
+  const enrichedItems = getMenuItems();
+
   return categoryOrder.map((name) => ({
     name,
-    items: menuItems.filter((item) => item.category === name),
+    items: enrichedItems.filter((item) => item.category === name),
   }));
 }
 
 export function findMenuItemById(itemId: string): MenuItem | undefined {
-  return menuItems.find((item) => item.id === itemId);
+  return getMenuItems().find((item) => item.id === itemId);
 }

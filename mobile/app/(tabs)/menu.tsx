@@ -54,12 +54,28 @@ const localImages: Record<string, ReturnType<typeof require>> = {
   'herb-crusted-lamb': require('@/assets/images/herb-crusted-lamb.jpg'),
 };
 
+function getDietaryLabels(item: MenuItem) {
+  const labels: string[] = [];
+  if (item.dietary.vegetarian) labels.push('Vegetarian');
+  if (item.dietary.glutenFree) labels.push('GF');
+  if (item.dietary.dairyFree) labels.push('Dairy-Free');
+  if (item.dietary.nutFree) labels.push('Nut-Free');
+  return labels.slice(0, 4);
+}
+
+function formatAllergen(allergen: MenuItem['allergens'][number]) {
+  return allergen === 'tree-nuts' ? 'tree nuts' : allergen;
+}
+
 function ItemCard({ item }: { item: MenuItem }) {
   const addItem = useStore((s) => s.addItem);
   const updateQuantity = useStore((s) => s.updateQuantity);
   const removeItem = useStore((s) => s.removeItem);
   const cartItems = useStore((s) => s.items);
-  const cartEntry = cartItems.find((i) => i.itemId === item.id);
+  const cartEntry = cartItems.find((i) => i.itemId === item.id && !i.customizations);
+  const dietaryLabels = getDietaryLabels(item);
+  const allergenLabel =
+    item.allergens.length > 0 ? `Contains ${item.allergens.map(formatAllergen).join(', ')}` : null;
 
   const handleAdd = useCallback(() => {
     if (!item.inStock) return;
@@ -99,10 +115,18 @@ function ItemCard({ item }: { item: MenuItem }) {
             </View>
           ))}
         </View>
+        <View style={styles.dietaryRow}>
+          {dietaryLabels.map((label) => (
+            <View key={label} style={styles.dietaryTag}>
+              <Text style={styles.dietaryTagText}>{label}</Text>
+            </View>
+          ))}
+        </View>
         <Text style={styles.cardName}>{item.name}</Text>
         <Text style={styles.cardDesc} numberOfLines={2}>
           {item.description}
         </Text>
+        {allergenLabel && <Text style={styles.allergenText}>{allergenLabel}</Text>}
         <View style={styles.cardFooter}>
           <Text style={styles.cardPrice}>${item.price}</Text>
           {item.inStock ? (
@@ -288,6 +312,15 @@ const styles = StyleSheet.create({
     fontSize: 10, fontFamily: 'Inter_600SemiBold',
     color: Colors.onSurfaceVariant, letterSpacing: 0.5, textTransform: 'uppercase',
   },
+  dietaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  dietaryTag: {
+    paddingHorizontal: 8, paddingVertical: 4,
+    backgroundColor: '#edf5e8', borderRadius: 999,
+  },
+  dietaryTagText: {
+    fontSize: 10, fontFamily: 'Inter_600SemiBold',
+    color: '#47633d', letterSpacing: 0.4, textTransform: 'uppercase',
+  },
   cardName: {
     fontSize: 18, fontFamily: 'PlayfairDisplay_700Bold',
     color: Colors.onSurface, marginBottom: 4,
@@ -295,6 +328,10 @@ const styles = StyleSheet.create({
   cardDesc: {
     fontSize: 14, fontFamily: 'Inter_400Regular',
     color: Colors.onSurfaceVariant, lineHeight: 20, marginBottom: 14,
+  },
+  allergenText: {
+    fontSize: 11, fontFamily: 'Inter_500Medium',
+    color: Colors.onSurfaceVariant, marginTop: -6, marginBottom: 12,
   },
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardPrice: { fontSize: 20, fontFamily: 'PlayfairDisplay_700Bold', color: Colors.onSurface },

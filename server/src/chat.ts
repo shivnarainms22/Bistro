@@ -1,6 +1,12 @@
 import Groq from "groq-sdk";
 
-import { findMenuItemById, getMenuItems } from "./menu.js";
+import {
+  buildValidatedAction,
+  dietaryConflictResponse,
+  parseLocalCartIntent,
+  parseToolArguments,
+} from "./cartActions.js";
+import { getMenuItems } from "./menu.js";
 import type { CartAction, ChatRequest, ChatResponse } from "./types.js";
 
 let groq: Groq | null = null;
@@ -20,6 +26,21 @@ const cartTools: Groq.Chat.ChatCompletionTool[] = [
         properties: {
           itemId: { type: "string", description: "The item's unique ID from the menu." },
           quantity: { type: "integer", description: "How many to add (default 1)." },
+          customizations: {
+            type: "object",
+            description: "Optional safe item options.",
+            properties: {
+              size: { type: "string", enum: ["small", "medium", "large"] },
+              spiceLevel: { type: "string", enum: ["mild", "medium", "spicy", "extra spicy"] },
+              milk: { type: "string", enum: ["whole", "oat", "almond", "soy"] },
+              doneness: { type: "string", enum: ["rare", "medium rare", "medium", "medium well", "well done"] },
+              sides: {
+                type: "array",
+                items: { type: "string", enum: ["fries", "side salad", "roasted vegetables", "seasonal greens", "sourdough"] },
+              },
+              specialInstructions: { type: "string" },
+            },
+          },
         },
         required: ["itemId"],
       },
@@ -57,6 +78,34 @@ const cartTools: Groq.Chat.ChatCompletionTool[] = [
   {
     type: "function",
     function: {
+      name: "update_item",
+      description: "Update item options/customizations without changing quantity.",
+      parameters: {
+        type: "object",
+        properties: {
+          itemId: { type: "string", description: "The item's unique ID." },
+          customizations: {
+            type: "object",
+            properties: {
+              size: { type: "string", enum: ["small", "medium", "large"] },
+              spiceLevel: { type: "string", enum: ["mild", "medium", "spicy", "extra spicy"] },
+              milk: { type: "string", enum: ["whole", "oat", "almond", "soy"] },
+              doneness: { type: "string", enum: ["rare", "medium rare", "medium", "medium well", "well done"] },
+              sides: {
+                type: "array",
+                items: { type: "string", enum: ["fries", "side salad", "roasted vegetables", "seasonal greens", "sourdough"] },
+              },
+              specialInstructions: { type: "string" },
+            },
+          },
+        },
+        required: ["itemId", "customizations"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "clear_cart",
       description: "Remove all items from the cart.",
       parameters: { type: "object", properties: {} },
@@ -86,8 +135,9 @@ function buildSystemPrompt(request: ChatRequest): string {
   const freq: Record<string, { name: string; count: number }> = {};
   for (const order of request.orders) {
     for (const item of order.items) {
-      if (!freq[item.itemId]) freq[item.itemId] = { name: item.name, count: 0 };
-      freq[item.itemId].count += item.quantity;
+      const current = freq[item.itemId] ?? { name: item.name, count: 0 };
+      current.count += item.quantity;
+      freq[item.itemId] = current;
     }
   }
   const topItems = Object.values(freq)
@@ -106,6 +156,7 @@ function buildSystemPrompt(request: ChatRequest): string {
 - Customer says "add [item]" or "order [item]" or "get me [item]" → call add_item tool
 - Customer says "remove [item]" or "take out [item]" → call remove_item tool
 - Customer says "make it [N]" or "change quantity to [N]" → call update_quantity tool
+- Customer changes size, milk, spice, doneness, sides, or special instructions → call update_item tool
 - Customer says "clear cart" or "start over" or "remove everything" → call clear_cart tool
 - Customer asks for recommendation, suggestion, or question → respond in TEXT ONLY, do NOT call any tool
 - After calling a tool → confirm in one short sentence. Never repeat the cart contents — the customer can see their cart on the Cart tab.
@@ -124,6 +175,9 @@ ${favoritesNote}`;
 type GroqMessage = Groq.Chat.ChatCompletionMessageParam;
 
 export async function createChatResponse(request: ChatRequest): Promise<ChatResponse> {
+  const deterministicCartIntent = parseLocalCartIntent(request);
+  if (deterministicCartIntent) return deterministicCartIntent;
+
   if (!process.env.GROQ_API_KEY) {
     return fallbackResponse(request);
   }
@@ -149,35 +203,54 @@ export async function createChatResponse(request: ChatRequest): Promise<ChatResp
     });
 
     const choice = response.choices[0];
+    if (!choice) {
+      return fallbackResponse(request);
+    }
     const actions: CartAction[] = [];
 
     if (choice.message.tool_calls?.length) {
       // Process tool calls
       for (const tc of choice.message.tool_calls) {
-        const args = JSON.parse(tc.function.arguments) as Record<string, unknown>;
+        const args = parseToolArguments(tc.function.arguments);
+        if (!args) continue;
         const name = tc.function.name;
 
         if (name === "add_item" && typeof args.itemId === "string") {
-          const item = findMenuItemById(args.itemId);
-          if (item?.inStock) {
-            actions.push({
-              type: "add_item",
-              itemId: args.itemId,
-              quantity: typeof args.quantity === "number" ? args.quantity : 1,
-            });
-          }
+          const action = buildValidatedAction({
+            type: "add_item",
+            itemId: args.itemId,
+            quantity: typeof args.quantity === "number" ? args.quantity : 1,
+            customizations: parseCustomizationsArgument(args.customizations),
+          });
+          if (action) actions.push(action);
         } else if (name === "remove_item" && typeof args.itemId === "string") {
-          actions.push({ type: "remove_item", itemId: args.itemId });
+          const action = buildValidatedAction({ type: "remove_item", itemId: args.itemId });
+          if (action) actions.push(action);
         } else if (
           name === "update_quantity" &&
           typeof args.itemId === "string" &&
           typeof args.quantity === "number"
         ) {
-          actions.push({ type: "update_quantity", itemId: args.itemId, quantity: args.quantity });
+          const action = buildValidatedAction({
+            type: "update_quantity",
+            itemId: args.itemId,
+            quantity: args.quantity,
+          });
+          if (action) actions.push(action);
+        } else if (name === "update_item" && typeof args.itemId === "string") {
+          const action = buildValidatedAction({
+            type: "update_item",
+            itemId: args.itemId,
+            customizations: parseCustomizationsArgument(args.customizations),
+          });
+          if (action) actions.push(action);
         } else if (name === "clear_cart") {
           actions.push({ type: "clear_cart", itemId: "" });
         }
       }
+
+      const dietaryConflict = dietaryConflictResponse(actions, request);
+      if (dietaryConflict) return dietaryConflict;
 
       // Second turn: send tool results back to get a natural-language reply
       const followUpMessages: GroqMessage[] = [
@@ -209,10 +282,17 @@ export async function createChatResponse(request: ChatRequest): Promise<ChatResp
   }
 }
 
+function parseCustomizationsArgument(value: unknown): CartAction["customizations"] {
+  return value && typeof value === "object" ? (value as CartAction["customizations"]) : undefined;
+}
+
 function fallbackResponse(request: ChatRequest): ChatResponse {
+  const parsed = parseLocalCartIntent(request);
+  if (parsed) return parsed;
+
   const name = request.profile.name.trim() || "there";
   return {
-    reply: `Sorry ${name}, I'm having trouble connecting right now. Please try again in a moment.`,
+    reply: `I can help with that, ${name}. Try asking me to add, remove, or update a specific menu item.`,
     actions: [],
   };
 }

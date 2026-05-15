@@ -13,6 +13,13 @@ export interface MenuItem {
   blurhash: string;
   inStock: boolean;
   customizable: boolean;
+  dietary: {
+    vegetarian: boolean;
+    glutenFree: boolean;
+    dairyFree: boolean;
+    nutFree: boolean;
+  };
+  allergens: Array<'dairy' | 'gluten' | 'tree-nuts' | 'peanuts' | 'shellfish' | 'meat'>;
 }
 
 export interface MenuCategory {
@@ -21,9 +28,10 @@ export interface MenuCategory {
 }
 
 export interface CartAction {
-  type: 'add_item' | 'remove_item' | 'update_quantity' | 'clear_cart';
+  type: 'add_item' | 'remove_item' | 'update_quantity' | 'update_item' | 'clear_cart';
   itemId: string;
   quantity?: number;
+  customizations?: CartItem['customizations'];
 }
 
 export interface ChatResponse {
