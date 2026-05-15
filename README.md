@@ -80,4 +80,4 @@ npm run typecheck
 - Demonstrate AI-driven cart interactions: add, update quantity, customize, remove, and clear cart.
 - Demonstrate dietary-aware recommendations and confirmation before adding conflicting items.
 - Briefly explain code structure: `mobile/` for Expo UI/state, `server/src/` for API/menu/chat parsing, and `server/test/` plus `mobile/test/` for regression coverage.
-- Mention AI tools used during development, including OpenAI Codex for implementation, debugging, and test generation.
+- Mention AI tools used during development, including OpenAI Codex and Claude Code for implementation, debugging, and test generation.
